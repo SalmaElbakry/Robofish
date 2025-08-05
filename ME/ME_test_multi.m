@@ -1,0 +1,80 @@
+com = 15;
+
+% Load MEGSV Dynamic Link Library
+if ~libisloaded('MEGSV86x64')
+   loadlibrary('D:\Liang Li\RobotRepeatRealFish\matlab\ME\MEGSV86x64.DLL', 'D:\Liang Li\RobotRepeatRealFish\matlab\ME\MEGSV86x64.h')
+end
+
+% Activate channel
+extendet = calllib('MEGSV86x64', 'GSV86actExt', com);
+if extendet ~= 0
+    disp(['Activation error: ', num2str(extendet)]);
+else
+    disp('Channel activated successfully.');
+end
+
+% Set the sampling rate to 1000 fps
+fps = 1000;
+freqSetResult = calllib('MEGSV86x64', 'GSV86setFrequency', com, fps);
+if freqSetResult ~= 0
+    disp(['Frequency set error: ', num2str(freqSetResult)]);
+else
+    disp('Frequency set to 1000 fps successfully.');
+end
+
+calllib('MEGSV86x64', 'GSV86clearDeviceBuf', com);
+calllib('MEGSV86x64', 'GSV86clearDLLbuffer', com);
+
+pause(10);
+
+% Define parameters for GSV86readMultiple
+NumMappedObjects = 8;
+count = 16000; % Number of samples to read (must be divisible by NumMappedObjects)
+valsread = libpointer('int32Ptr', 0); % Pointer to the number of values read
+ErrFlags = libpointer('int32Ptr', 0); % Pointer to error flags
+
+% Allocate memory for the output array
+out = libpointer('doublePtr', zeros(1, count));
+
+% Read data from the device
+[error, ~] = calllib('MEGSV86x64', 'GSV86readMultiple', com, 0, out, count, valsread, ErrFlags);
+
+% Retrieve the actual number of values read
+num_vals_read = get(valsread, 'Value');
+data = get(out, 'Value');
+data = data(1:num_vals_read); % Resize the data array to the number of values actually read
+
+% Check for errors
+if error ~= 0
+    disp(['GSV86readMultiple error: ', num2str(error)]);
+end
+
+% Display number of values read and data
+disp(['Number of values read: ', num2str(num_vals_read)]);
+disp('Data: ');
+disp(data);
+
+% Example: Organize and display data based on NumMappedObjects
+if num_vals_read > 0
+    if mod(num_vals_read, NumMappedObjects) == 0
+        organized_data = reshape(data, NumMappedObjects, [])';
+        disp('Organized Data:');
+        disp(organized_data);
+    else
+        disp('Data length is not a multiple of NumMappedObjects.');
+    end
+else
+    disp('No values read.');
+end
+
+% Test with GSV86read
+adx1 = libpointer('doublePtr', zeros(1, 1));
+[error_single, data1] = calllib('MEGSV86x64', 'GSV86read', com, 1, adx1);
+
+% Display single read result
+if error_single == 0
+    single_value = get(adx1, 'Value');
+    disp(['Single read value: ', num2str(single_value)]);
+else
+    disp(['Single read error: ', num2str(error_single)]);
+end
