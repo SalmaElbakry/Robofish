@@ -1,12 +1,14 @@
 finTypes = {'soft', 'rigid'};
-flowSpeed = 80;  % Only flow 80
+flowSpeeds = 80;  % Only flow 80
+role = {'Follower', 'Leader'};      % Correctly define role names
 
-TorFor_F_all = cell(2, 1); % soft, rigid
-TorFor_L_all = cell(2, 1); % soft, rigid
+% Preallocate
+TorFor_F_all = cell(length(flowSpeeds), length(finTypes));
+TorFor_L_all = cell(length(flowSpeeds), length(finTypes));
 
 % Load only flow 80 data
 for fi = 1:2
-    flowStr = sprintf('flow_%d_angle_20_fre_1_dist_7.mat', flowSpeed);
+    flowStr = sprintf('flow_%d_angle_20_fre_1_dist_7.mat', flowSpeeds);
     if strcmp(finTypes{fi}, 'rigid')
         fileName = ['RIGID_' flowStr];
     else
@@ -17,50 +19,44 @@ for fi = 1:2
     TorFor_L_all{fi} = data.TorFor_L;
 end
 
-colors = {'b', 'r'};                % soft = blue, rigid = red
-lineStylesFollower = {'-', '--'};  % soft, rigid
-lineStylesLeader   = {':', '-.'};  % soft, rigid
+% Set styles
+colors = {'b', 'r'};                % Blue for Follower, Red for Leader
+markers = {'o', 's'};               % Distance 7 = o, Distance 4 = s
 axisLabels = {'Fx', 'Fy', 'Fz', 'Tx', 'Ty', 'Tz'};
 
-j = 1;  % Fixed second index
-
-figure
-
+figure;
 for i = 1:6
-    subplot(2, 3, i)
+    subplot(2,3,i)
     hold on
-
-    hLines = gobjects(4,1); % 2 fin types ? (follower + leader)
-    legendLabels = cell(4,1);
-    idx = 0;
-
-    for fi = 1:2
-        % Max per phase index (1 to 9)
+    legendEntries = {};
+    
+    for a = 1:length(finTypes)
+        % Extract and plot follower
         thrust_F = zeros(9,1);
+        for k = 1:9
+            thrust_F(k) = max(TorFor_F_all{1, a}{k, 1}(:, i));
+        end
+        plot(1:9, thrust_F, ...
+            'Color', colors{1}, ...
+            'LineStyle', '-', ...
+            'Marker', markers{a}, ...
+            'DisplayName', sprintf('Flow %d Fin Type %s Follower', flowSpeeds, finTypes{a}));
+
+        % Extract and plot leader
         thrust_L = zeros(9,1);
         for k = 1:9
-            thrust_F(k) = max(TorFor_F_all{fi}{k, j}(:, i));
-            thrust_L(k) = max(TorFor_L_all{fi}{k, j}(:, i));
+            thrust_L(k) = max(TorFor_L_all{1, a}{k, 1}(:, i));
         end
-
-        % Plot follower
-        idx = idx + 1;
-        hLines(idx) = plot(1:9, thrust_F, ...
-            'Color', colors{fi}, ...
-            'LineStyle', lineStylesFollower{fi});
-        legendLabels{idx} = sprintf('%s Flow %d Follower', finTypes{fi}, flowSpeed);
-
-        % Plot leader
-        idx = idx + 1;
-        hLines(idx) = plot(1:9, thrust_L, ...
-            'Color', colors{fi}, ...
-            'LineStyle', lineStylesLeader{fi});
-        legendLabels{idx} = sprintf('%s Flow %d Leader', finTypes{fi}, flowSpeed);
+        plot(1:9, thrust_L, ...
+            'Color', colors{2}, ...
+            'LineStyle', '-', ...
+            'Marker', markers{a}, ...
+            'DisplayName', sprintf('Flow %d Fin Type %s Leader', flowSpeeds, finTypes {a}));
     end
-
-    xlabel('Phase Difference Index');
-    ylabel('Max Force/Torque');
+    
     title(axisLabels{i});
-    legend(hLines, legendLabels, 'Location', 'best');
-    grid on
+    xlabel('Phase Index');
+    ylabel('Force/Torque');
+    grid on;
+    legend('Location', 'bestoutside');
 end
