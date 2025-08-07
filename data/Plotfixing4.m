@@ -1,0 +1,62 @@
+% Define flow speeds and angles
+flowSpeeds = [0, 40, 80];
+angles = [10, 20];
+
+% Preallocate
+TorFor_F_all = cell(length(flowSpeeds), length(angles));
+TorFor_L_all = cell(length(flowSpeeds), length(angles));
+
+% Load data: assume filenames like flow_0_angle_10_fre_1_dist_7.mat
+for f = 1:length(flowSpeeds)
+    for a = 1:length(angles)
+        fileName = sprintf('flow_%d_angle_%d_fre_1_dist_7.mat', flowSpeeds(f), angles(a));
+        data = load(fileName, 'TorFor_F', 'TorFor_L');
+        TorFor_F_all{f, a} = data.TorFor_F;
+        TorFor_L_all{f, a} = data.TorFor_L;
+    end
+end
+
+% Set labels and styles
+colors = {'b', 'g', 'r'};             % 3 flows
+markers = {'o', 's', 'd'};            % for visibility
+lineStyles = {'-', '--'};            % angle 10: solid, angle 20: dashed
+axisLabels = {'Fx', 'Fy', 'Fz', 'Tx', 'Ty', 'Tz'};
+
+% Plotting
+figure;
+for i = 1:6
+    subplot(2,3,i)
+    hold on
+    legendEntries = {};
+    
+    for f = 1:length(flowSpeeds)
+        for a = 1:length(angles)
+            % Extract max values over time for phase index 1:9
+            thrust_F = zeros(9,1);
+            thrust_L = zeros(9,1);
+            for k = 1:9
+                thrust_F(k) = max(TorFor_F_all{f, a}{k, 1}(:, i));
+                thrust_L(k) = max(TorFor_L_all{f, a}{k, 1}(:, i));
+            end
+            
+            % Plot follower
+            plot(1:9, thrust_F, ...
+                [lineStyles{a} markers{f}], ...
+                'Color', colors{f}, ...
+                'DisplayName', sprintf('Flow %d Angle %d Follower', flowSpeeds(f), angles(a)));
+            
+            % Plot leader
+            plot(1:9, thrust_L, ...
+                [lineStyles{a} markers{f}], ...
+                'Color', colors{f}, ...
+                'LineWidth', 1.2, ...
+                'DisplayName', sprintf('Flow %d Angle %d Leader', flowSpeeds(f), angles(a)));
+        end
+    end
+    
+    xlabel('Phase Difference Index')
+    ylabel('Max Force/Torque')
+    title(axisLabels{i})
+    grid on
+    legend('show', 'Location', 'bestoutside')
+end

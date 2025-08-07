@@ -34,15 +34,15 @@ for i = 1:6 % For each axis (Fx, Fy, Fz, Tx, Ty, Tz)
     % Plot
     subplot(2, 3, i)
 
-    % Follower
-    plot(1:9, thrust_F(:, 1), '-ob', 'DisplayName', 'Flow 0 Follower'); hold on
-    plot(1:9, thrust_F(:, 2), '-og', 'DisplayName', 'Flow 40 Follower');
-    plot(1:9, thrust_F(:, 3), '-or', 'DisplayName', 'Flow 80 Follower');
-% 
-%     % Leader
-%     plot(1:9, thrust_L(:, 1), '--ob', 'DisplayName', 'Flow 0 Leader'); hold on
-%     plot(1:9, thrust_L(:, 2), '--og', 'DisplayName', 'Flow 40 Leader');
-%     plot(1:9, thrust_L(:, 3), '--or', 'DisplayName', 'Flow 80 Leader');
+%     % Follower
+%     plot(1:9, thrust_F(:, 1), '-ob', 'DisplayName', 'Flow 0 Follower'); hold on
+%     plot(1:9, thrust_F(:, 2), '-og', 'DisplayName', 'Flow 40 Follower');
+%     plot(1:9, thrust_F(:, 3), '-or', 'DisplayName', 'Flow 80 Follower');
+
+    % Leader
+    plot(1:9, thrust_L(:, 1), '--ob', 'DisplayName', 'Flow 0 Leader'); hold on
+    plot(1:9, thrust_L(:, 2), '--og', 'DisplayName', 'Flow 40 Leader');
+    plot(1:9, thrust_L(:, 3), '--or', 'DisplayName', 'Flow 80 Leader');
 
     xlabel('Phase Difference Index')
     ylabel('Max Force/Torque')
