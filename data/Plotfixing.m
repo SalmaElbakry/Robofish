@@ -1,5 +1,5 @@
-horizData = load('flow_40_angle_10_fre_1_dist_7.mat', 'TorFor_F', 'TorFor_L');
-vertData = load('flow_40_angle_10_fre_1_VERTdist_6.mat', 'TorFor_F', 'TorFor_L');
+horizData = load('flow_80_angle_10_fre_1_dist_7.mat', 'TorFor_F', 'TorFor_L');
+vertData = load('flow_80_angle_10_fre_1_VERTdist_6.mat', 'TorFor_F', 'TorFor_L');
 
 TorFor_F_horiz = horizData.TorFor_F;
 TorFor_L_horiz = horizData.TorFor_L;
