@@ -1,73 +1,95 @@
-trial1Data = load('results_flow-40_amp-20_freq-1_trial-1.mat', 'TorFor_F', 'TorFor_L');
-trial2Data = load('results_flow-40_amp-20_freq-1_trial-2.mat', 'TorFor_F', 'TorFor_L');
-trial3Data = load('results_flow-40_amp-20_freq-1_trial-3.mat', 'TorFor_F', 'TorFor_L');
+horizData = load('flow_40_angle_10_fre_1_dist_7.mat', 'TorFor_F', 'TorFor_L');
+vertData = load('flow_40_angle_10_fre_1_VERTdist_6.mat', 'TorFor_F', 'TorFor_L');
 
-TorFor_F_1 = trial1Data.TorFor_F;
-TorFor_L_1 = trial1Data.TorFor_L;
+TorFor_F_horiz = horizData.TorFor_F;
+TorFor_L_horiz = horizData.TorFor_L;
 
-TorFor_F_2 = trial2Data.TorFor_F;
-TorFor_L_2 = trial2Data.TorFor_L;
-
-TorFor_F_3 = trial3Data.TorFor_F;
-TorFor_L_3 = trial3Data.TorFor_L;
+TorFor_F_vert = vertData.TorFor_F;
+TorFor_L_vert = vertData.TorFor_L;
 
 j = 1; % Flow speed index
-numTrials = size(TorFor_F_1{1, j}, 1); 
+numTrials = size(TorFor_F_horiz{1, j}, 1); 
 
-figure
+
 for i = 1:6 % For each axis (Fx, Fy, Fz, Tx, Ty, Tz)
     
-    % Initialize matrices
-    thrust_F_1 = zeros(9, numTrials);
-    thrust_L_1 = zeros(9, numTrials);
-    thrust_F_2 = zeros(9, numTrials);
-    thrust_L_2 = zeros(9, numTrials);
-    thrust_F_3 = zeros(9, numTrials);
-    thrust_L_3 = zeros(9, numTrials);
-    for trial = 1:numTrials
-        for k = 1:9
-            thrust_F_1(k, trial) = max(TorFor_F_1{k, j}(trial, i));
-            thrust_L_1(k, trial) = max(TorFor_L_1{k, j}(trial, i));
-            thrust_F_2(k, trial) = max(TorFor_F_2{k, j}(trial, i));
-            thrust_L_2(k, trial) = max(TorFor_L_2{k, j}(trial, i));
-            thrust_F_3(k, trial) = max(TorFor_F_3{k, j}(trial, i));
-            thrust_L_3(k, trial) = max(TorFor_L_3{k, j}(trial, i));
-        end
+    % Initialize vectors (1 value per phase diff index)
+    thrust_F_horiz = zeros(9, 1);
+    thrust_L_horiz = zeros(9, 1);
+    thrust_F_vert = zeros(9, 1);
+    thrust_L_vert = zeros(9, 1);
+
+    for k = 1:9
+        % Max over time (row-wise), not trials
+        thrust_F_horiz(k) = max(TorFor_F_horiz{k, j}(:, i));
+        thrust_L_horiz(k) = max(TorFor_L_horiz{k, j}(:, i));
+        
+        thrust_F_vert(k) = max(TorFor_F_vert{k, j}(:, i));
+        thrust_L_vert(k) = max(TorFor_L_vert{k, j}(:, i));
     end
 
-    % Compute mean and std across trials
-    mean_F_1 = mean(thrust_F_1, 2);
-    std_F_1 = std(thrust_F_1, [], 2);
-    
-    mean_L_1 = mean(thrust_L_1, 2);
-    std_L_1 = std(thrust_L_1, [], 2);
-    
-    mean_F_2 = mean(thrust_F_2, 2);
-    std_F_2 = std(thrust_F_2, [], 2);
-    
-    mean_L_2 = mean(thrust_L_2, 2);
-    std_L_2 = std(thrust_L_2, [], 2);
-   
-    mean_F_3 = mean(thrust_F_3, 2);
-    std_F_3 = std(thrust_F_3, [], 2);
-    
-    mean_L_3 = mean(thrust_L_3, 2);
-    std_L_3 = std(thrust_L_3, [], 2);
-    % Plot
+    % No std ? only one run per condition
     subplot(2, 3, i)
-    errorbar(1:9, mean_F_1, std_F_1, '-ob', 'DisplayName', '1 Follower');
+    plot(1:9, thrust_F_horiz, '-ob', 'DisplayName', 'horiz Follower');
     hold on
-%     errorbar(1:9, mean_L_1, std_L_1, '-og', 'DisplayName', '1 Leader');
-    
-    errorbar(1:9, mean_F_2, std_F_2, '-or', 'DisplayName', '2 Follower');
-%     errorbar(1:9, mean_L_2, std_L_2, '-ok', 'DisplayName', '2 Leader');
-    
-    errorbar(1:9, mean_F_3, std_F_3, '-ok', 'DisplayName', '3 Follower');
-%     errorbar(1:9, mean_L_3, std_L_3, '-om', 'DisplayName', '3 Leader');
-    
+    plot(1:9, thrust_L_horiz, '-og', 'DisplayName', 'horiz Leader');
+    plot(1:9, thrust_F_vert, '-or', 'DisplayName', 'vert Follower');
+    plot(1:9, thrust_L_vert, '-ok', 'DisplayName', 'vert Leader');
+
     xlabel('Phase Difference Index')
     ylabel('Max Force/Torque')
     title(sprintf('Axis %d', i))
     legend show
     grid on
 end
+
+
+% 
+% figure
+% for i = 1:6 % For each axis (Fx, Fy, Fz, Tx, Ty, Tz)
+%     
+%     % Initialize matrices
+%     thrust_F_horiz = zeros(9, numTrials);
+%     thrust_L_horiz = zeros(9, numTrials);
+%     thrust_F_vert = zeros(9, numTrials);
+%     thrust_L_vert = zeros(9, numTrials);
+% 
+%     for trial = 1:numTrials
+%         for k = 1:9
+%             thrust_F_horiz(k, trial) = max(TorFor_F_horiz{k, j}(trial, i));
+%             thrust_L_horiz(k, trial) = max(TorFor_L_horiz{k, j}(trial, i));
+%            
+%             thrust_F_vert(k, trial) = max(TorFor_F_vert{k, j}(trial, i));
+%             thrust_L_vert(k, trial) = max(TorFor_L_vert{k, j}(trial, i));
+%         end
+%     end
+% 
+%     % Compute mean and std across trials
+%     mean_F_horiz = mean(thrust_F_horiz, 2);
+%     std_F_horiz = std(thrust_F_horiz, [], 2);
+%     
+%     mean_L_horiz = mean(thrust_L_horiz, 2);
+%     std_L_horiz = std(thrust_L_horiz, [], 2);
+%     
+%     mean_F_vert = mean(thrust_F_vert, 2);
+%     std_F_vert = std(thrust_F_vert, [], 2);
+%     
+%     mean_L_vert = mean(thrust_L_vert, 2);
+%     std_L_vert = std(thrust_L_vert, [], 2);
+% 
+%     % Plot
+%     subplot(2, 3, i)
+%     errorbar(1:9, mean_F_horiz, std_F_horiz, '-ob', 'DisplayName', 'horiz Follower');
+%     hold on
+% %     errorbar(1:9, mean_L_horiz, ustd_L_horiz, '-og', 'DisplayName', 'horiz Leader');
+%     errorbar(1:9, mean_F_vert, std_F_vert, '-or', 'DisplayName', 'vert Follower');
+% %     errorbar(1:9, mean_L_vert, std_L_vert, '-ok', 'DisplayName', 'vert Leader');
+%     
+%     xlabel('Phase Difference Index')
+%     ylabel('Max Force/Torque')
+%     title(sprintf('Axis %d', i))
+%     legend show
+%     grid on
+% end
+% 
+
