@@ -1,6 +1,6 @@
 % Define flow speeds and angles
 % flowSpeeds = [0, 40, 80];
-flowSpeeds = 80;
+flowSpeeds = [80];
 angles = [10, 20];
 
 % Preallocate
@@ -18,23 +18,21 @@ for f = 1:length(flowSpeeds)
 end
 
 % Set labels and styles
-colors = {'b', 'r', 'k'};             % 3 flows (adjusted below)
-markers = {'o', 's', 'd'};            % markers per angle
-lineStyles = {'-', '--'};            % per role
+colors = {'b', 'g', 'r'};             % 3 flows
+markers = {'o', 's', 'd'};            % for visibility
+lineStyles = {'-', '--'};            % angle 10: solid, angle 20: dashed
 axisLabels = {'Fx', 'Fy', 'Fz', 'Tx', 'Ty', 'Tz'};
 
-% Adjust color/marker assignment dynamically
-numFlows = length(flowSpeeds);
-numAngles = length(angles);
+% Plotting
 figure;
-
 for i = 1:6
     subplot(2,3,i)
     hold on
     legendEntries = {};
     
-    for f = 1:numFlows
-        for a = 1:numAngles
+    for f = 1:length(flowSpeeds)
+        for a = 1:length(angles)
+            % Extract max values over time for phase index 1:9
             thrust_F = zeros(9,1);
             thrust_L = zeros(9,1);
             for k = 1:9
@@ -42,31 +40,24 @@ for i = 1:6
                 thrust_L(k) = max(TorFor_L_all{f, a}{k, 1}(:, i));
             end
             
-            % Assign color based on angle instead of flow if only one flow
-            colorIdx = f;
-            if numFlows == 1
-                colorIdx = a;  % Use angle to differentiate
-            end
-            
             % Plot follower
             plot(1:9, thrust_F, ...
-                'Color', colors{colorIdx}, ...
-                'LineStyle', '-', ...
-                'Marker', markers{a}, ...
+                [lineStyles{a} markers{f}], ...
+                'Color', colors{f}, ...
                 'DisplayName', sprintf('Flow %d Angle %d Follower', flowSpeeds(f), angles(a)));
             
             % Plot leader
             plot(1:9, thrust_L, ...
-                'Color', colors{colorIdx}, ...
-                'LineStyle', '--', ...
-                'Marker', markers{a}, ...
+                [lineStyles{a} markers{f}], ...
+                'Color', colors{f}, ...
+                'LineWidth', 1.2, ...
                 'DisplayName', sprintf('Flow %d Angle %d Leader', flowSpeeds(f), angles(a)));
         end
     end
     
-    title(axisLabels{i});
-    xlabel('Phase Index');
-    ylabel('Force/Torque');
-    grid on;
-    legend('Location', 'bestoutside');
+    xlabel('Phase Difference Index')
+    ylabel('Max Force/Torque')
+    title(axisLabels{i})
+    grid on
+    legend('show', 'Location', 'bestoutside')
 end
